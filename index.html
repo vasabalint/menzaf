@@ -64,9 +64,8 @@
       // Struktúra: 
       // - dailyMenu: { soup, main, price } -> Ez a napi menü (leves + főétel)
       // - soup: { name, price } -> Külön leves
-      // - mains: [] -> 3 db főétel
+      // - mains: [] -> 3 db főétel körettel együtt
       // - fozelek: { name, price } -> 1 db főzelék
-      // - sides: [] -> 2 db köret
       // - desserts: [] -> 2 db desszert
 
       const WEEKLY_MENU = [
@@ -79,15 +78,11 @@
           },
           soup: { name: 'Tejfölös bableves füstölt csülökkel', price: 1290 },
           mains: [
-            { name: 'Cigánypecsenye kakastaréj szalonnával', price: 2490 },
-            { name: 'Roston csirkemell sajtmártással', price: 2290 },
-            { name: 'Rántott trappista sajt', price: 1990 },
+            { name: 'Cigánypecsenye kakastaréj szalonnával, steak burgonya', price: 2490 },
+            { name: 'Roston csirkemell sajtmártással, jázmin rizs', price: 2290 },
+            { name: 'Rántott trappista sajt, rizs, tartármártás', price: 1990 },
           ],
           fozelek: { name: 'Zöldborsófőzelék, bécsi virsli', price: 1690 },
-          sides: [
-            { name: 'Jázmin rizs', price: 690 },
-            { name: 'Steak burgonya', price: 790 },
-          ],
           desserts: [
             { name: 'Somlói galuska', price: 990 },
             { name: 'Ízes palacsinta (2db)', price: 790 }
@@ -102,15 +97,11 @@
           },
           soup: { name: 'Újházi tyúkhúsleves', price: 1190 },
           mains: [
-            { name: 'Kijevi csirkemell', price: 2390 },
-            { name: 'Brassói aprópecsenye', price: 2490 },
-            { name: 'Rántott gombafejek', price: 1990 },
+            { name: 'Kijevi csirkemell, burgonyapüré', price: 2390 },
+            { name: 'Brassói aprópecsenye, vegyesvágott', price: 2490 },
+            { name: 'Rántott gombafejek, párolt rizs, tartár', price: 1990 },
           ],
           fozelek: { name: 'Finomfőzelék, sertéspörkölt', price: 1790 },
-          sides: [
-            { name: 'Párolt rizs', price: 690 },
-            { name: 'Burgonyapüré', price: 790 },
-          ],
           desserts: [
             { name: 'Madártej', price: 990 },
             { name: 'Kókusztekercs', price: 690 }
@@ -125,15 +116,11 @@
           },
           soup: { name: 'Frankfurti leves', price: 1190 },
           mains: [
-            { name: 'Mátrai borzas csirkemell', price: 2390 },
-            { name: 'Natúr szelet gombamártással', price: 2290 },
-            { name: 'Rántott karfiol', price: 1990 },
+            { name: 'Mátrai borzas csirkemell, hasábburgonya', price: 2390 },
+            { name: 'Natúr szelet gombamártással, rizi-bizi', price: 2290 },
+            { name: 'Rántott karfiol, párolt rizs, tartár', price: 1990 },
           ],
           fozelek: { name: 'Kelkáposztafőzelék, fasírt', price: 1690 },
-          sides: [
-            { name: 'Rizi-bizi', price: 690 },
-            { name: 'Hasábburgonya', price: 790 },
-          ],
           desserts: [
             { name: 'Túrógombóc tejföllel', price: 1190 },
             { name: 'Meggyes pite', price: 790 }
@@ -148,15 +135,11 @@
           },
           soup: { name: 'Gulyásleves', price: 1490 },
           mains: [
-            { name: 'Bakonyi sertésborda', price: 2490 },
-            { name: 'Mézes-mustáros csirkemellcsíkok', price: 2290 },
-            { name: 'Rántott camembert áfonyalekvárral', price: 2190 },
+            { name: 'Bakonyi sertésborda, galuska', price: 2490 },
+            { name: 'Mézes-mustáros csirkemellcsíkok, krokett', price: 2290 },
+            { name: 'Rántott camembert áfonyalekvárral, rizs', price: 2190 },
           ],
           fozelek: { name: 'Tökfőzelék, sült kolbász', price: 1690 },
-          sides: [
-            { name: 'Párolt rizs', price: 690 },
-            { name: 'Krokett', price: 790 },
-          ],
           desserts: [
             { name: 'Gesztenyepüré', price: 990 },
             { name: 'Csokis muffin', price: 590 }
@@ -171,15 +154,11 @@
           },
           soup: { name: 'Húsleves gazdagon', price: 1190 },
           mains: [
-            { name: 'Gordon Blue (sajttal-sonkával töltött)', price: 2490 },
-            { name: 'Roston sült halfilé citrommal', price: 2390 },
-            { name: 'Grillezett gomolyasajt', price: 2190 },
+            { name: 'Gordon Blue (sajttal-sonkával töltött), petrezselymes burgonya', price: 2490 },
+            { name: 'Roston sült halfilé citrommal, kukoricás rizs', price: 2390 },
+            { name: 'Grillezett gomolyasajt, friss kevert saláta', price: 2190 },
           ],
           fozelek: { name: 'Sárgaborsó főzelék, sült hagyma', price: 1490 },
-          sides: [
-            { name: 'Kukoricás rizs', price: 690 },
-            { name: 'Petrezselymes burgonya', price: 790 },
-          ],
           desserts: [
             { name: 'Tiramisu', price: 1090 },
             { name: 'Almás pite', price: 790 }
@@ -216,7 +195,6 @@
         SOUP: 'Leves',
         MAIN: 'Főétel',
         FOZELEK: 'Főzelék',
-        SIDE: 'Köret',
         DESSERT: 'Desszert',
       };
 
@@ -525,12 +503,12 @@
                     {DishType.DAILY}
                  </div>
                  <div className="space-y-2">
-                    <div className="text-slate-800 dark:text-slate-200 text-sm font-medium flex gap-2">
-                      <Icons.Soup size={14} className="text-slate-400 mt-1 flex-shrink-0"/>
+                    <div className="text-slate-800 dark:text-slate-200 text-sm font-medium flex items-start gap-2">
+                      <Icons.Soup size={14} className="text-slate-400 mt-0.5 flex-shrink-0 min-w-[14px]"/>
                       <span>{data.dailyMenu.soup}</span>
                     </div>
-                    <div className="text-slate-800 dark:text-slate-200 text-sm font-medium flex gap-2">
-                      <Icons.Utensils size={14} className="text-slate-400 mt-1 flex-shrink-0"/>
+                    <div className="text-slate-800 dark:text-slate-200 text-sm font-medium flex items-start gap-2">
+                      <Icons.Utensils size={14} className="text-slate-400 mt-0.5 flex-shrink-0 min-w-[14px]"/>
                       <span>{data.dailyMenu.main}</span>
                     </div>
                  </div>
@@ -572,22 +550,6 @@
                   price={data.fozelek.price}
                   icon={<Icons.Leaf size={14} className="text-green-600" />} 
                 />
-
-                {/* Köretek */}
-                <div className="pt-2">
-                   <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1">
-                    <Icons.Bowl size={14} className="text-blue-400"/>
-                    {DishType.SIDE}
-                  </div>
-                  {data.sides.map((side, idx) => (
-                    <MenuItemRow 
-                      key={idx}
-                      name={side.name}
-                      price={side.price}
-                      isSubItem
-                    />
-                  ))}
-                </div>
 
                 {/* Desszertek */}
                 <div className="pt-2">
