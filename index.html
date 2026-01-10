@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="hu">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Menzafood - Házias Ízek</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class', // Enable manual dark mode toggling
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            },
+            colors: {
+              slate: {
+                850: '#1e293b',
+                950: '#020617',
+              }
+            }
+          }
+        }
+      }
+    </script>
+
+    <!-- React and ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+      body {
+        font-family: 'Inter', sans-serif;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      /* Custom map hover effect */
+      .map-hover:hover {
+        opacity: 0.9;
+        transform: scale(1.02);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+      const { useState, useEffect } = React;
+
+      // ==========================================================================================
+      // ADATOK SZERKESZTÉSE - ITT TUDOD MÓDOSÍTANI A MENÜT ÉS AZ ADATOKAT
+      // ==========================================================================================
+
+      // --- HETI ÉTLAP ADATOK ---
+      // Struktúra: 
+      // - dailyMenu: { soup, main, price } -> Ez a napi menü (leves + főétel)
+      // - soup: { name, price } -> Külön leves
+      // - mains: [] -> 3 db főétel
+      // - fozelek: { name, price } -> 1 db főzelék
+      // - sides: [] -> 2 db köret
+      // - desserts: [] -> 2 db desszert
+
+      const WEEKLY_MENU = [
+        {
+          day: 'Hétfő',
+          dailyMenu: {
+            soup: 'Csontleves cérnametélttel',
+            main: 'Rántott sertéskaraj, petrezselymes burgonya',
+            price: 2190
+          },
+          soup: { name: 'Tejfölös bableves füstölt csülökkel', price: 1290 },
+          mains: [
+            { name: 'Cigánypecsenye kakastaréj szalonnával', price: 2490 },
+            { name: 'Roston csirkemell sajtmártással', price: 2290 },
+            { name: 'Rántott trappista sajt', price: 1990 },
+          ],
+          fozelek: { name: 'Zöldborsófőzelék, bécsi virsli', price: 1690 },
+          sides: [
+            { name: 'Jázmin rizs', price: 690 },
+            { name: 'Steak burgonya', price: 790 },
+          ],
+          desserts: [
+            { name: 'Somlói galuska', price: 990 },
+            { name: 'Ízes palacsinta (2db)', price: 790 }
+          ]
+        },
+        {
+          day: 'Kedd',
+          dailyMenu: {
+            soup: 'Zöldségleves vajas galuskával',
+            main: 'Bácskai rizseshús, csemege uborka',
+            price: 2190
+          },
+          soup: { name: 'Újházi tyúkhúsleves', price: 1190 },
+          mains: [
+            { name: 'Kijevi csirkemell', price: 2390 },
+            { name: 'Brassói aprópecsenye', price: 2490 },
+            { name: 'Rántott gombafejek', price: 1990 },
+          ],
+          fozelek: { name: 'Finomfőzelék, sertéspörkölt', price: 1790 },
+          sides: [
+            { name: 'Párolt rizs', price: 690 },
+            { name: 'Burgonyapüré', price: 790 },
+          ],
+          desserts: [
+            { name: 'Madártej', price: 990 },
+            { name: 'Kókusztekercs', price: 690 }
+          ]
+        },
+        {
+          day: 'Szerda',
+          dailyMenu: {
+            soup: 'Paradicsomleves betűtésztával',
+            main: 'Sertéspörkölt, szarvacska tészta',
+            price: 2190
+          },
+          soup: { name: 'Frankfurti leves', price: 1190 },
+          mains: [
+            { name: 'Mátrai borzas csirkemell', price: 2390 },
+            { name: 'Natúr szelet gombamártással', price: 2290 },
+            { name: 'Rántott karfiol', price: 1990 },
+          ],
+          fozelek: { name: 'Kelkáposztafőzelék, fasírt', price: 1690 },
+          sides: [
+            { name: 'Rizi-bizi', price: 690 },
+            { name: 'Hasábburgonya', price: 790 },
+          ],
+          desserts: [
+            { name: 'Túrógombóc tejföllel', price: 1190 },
+            { name: 'Meggyes pite', price: 790 }
+          ]
+        },
+        {
+          day: 'Csütörtök',
+          dailyMenu: {
+            soup: 'Daragaluska leves',
+            main: 'Szezámmagos rántott csirkemell, rizs',
+            price: 2190
+          },
+          soup: { name: 'Gulyásleves', price: 1490 },
+          mains: [
+            { name: 'Bakonyi sertésborda', price: 2490 },
+            { name: 'Mézes-mustáros csirkemellcsíkok', price: 2290 },
+            { name: 'Rántott camembert áfonyalekvárral', price: 2190 },
+          ],
+          fozelek: { name: 'Tökfőzelék, sült kolbász', price: 1690 },
+          sides: [
+            { name: 'Párolt rizs', price: 690 },
+            { name: 'Krokett', price: 790 },
+          ],
+          desserts: [
+            { name: 'Gesztenyepüré', price: 990 },
+            { name: 'Csokis muffin', price: 590 }
+          ]
+        },
+        {
+          day: 'Péntek',
+          dailyMenu: {
+            soup: 'Fokhagymakrémleves pirított kenyérkockával',
+            main: 'Bolognai spagetti, reszelt sajt',
+            price: 2190
+          },
+          soup: { name: 'Húsleves gazdagon', price: 1190 },
+          mains: [
+            { name: 'Gordon Blue (sajttal-sonkával töltött)', price: 2490 },
+            { name: 'Roston sült halfilé citrommal', price: 2390 },
+            { name: 'Grillezett gomolyasajt', price: 2190 },
+          ],
+          fozelek: { name: 'Sárgaborsó főzelék, sült hagyma', price: 1490 },
+          sides: [
+            { name: 'Kukoricás rizs', price: 690 },
+            { name: 'Petrezselymes burgonya', price: 790 },
+          ],
+          desserts: [
+            { name: 'Tiramisu', price: 1090 },
+            { name: 'Almás pite', price: 790 }
+          ]
+        }
+      ];
+
+      // --- NYITVATARTÁS ---
+      const OPENING_HOURS = [
+        { day: 'Hétfő', hours: '9:00 - 15:00' },
+        { day: 'Kedd', hours: '9:00 - 15:00' },
+        { day: 'Szerda', hours: '9:00 - 15:00' },
+        { day: 'Csütörtök', hours: '9:00 - 15:00' },
+        { day: 'Péntek', hours: '9:00 - 15:00' },
+        { day: 'Szombat-Vasárnap', hours: 'ZÁRVA' },
+      ];
+
+      // --- ELÉRHETŐSÉGEK ---
+      const CONTACT_INFO = {
+        address: '2151 Fót, Csaba utca 16.',
+        phone: '+36 1 234 5678',
+        email: 'info@menzafood.hu',
+        googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=2151+Fót,+Csaba+utca+16',
+        facebookUrl: 'https://www.facebook.com/menzafood.hu/?locale=hu_HU'
+      };
+
+      // ==========================================================================================
+      // KÓD RÉSZ (INNENTŐL CSAK AKKOR MÓDOSÍTS, HA A MŰKÖDÉSEN VÁLTOZTATNÁL)
+      // ==========================================================================================
+
+      // --- KONSTANSOK ---
+      const DishType = {
+        DAILY: 'Napi Menü',
+        SOUP: 'Leves',
+        MAIN: 'Főétel',
+        FOZELEK: 'Főzelék',
+        SIDE: 'Köret',
+        DESSERT: 'Desszert',
+      };
+
+      // --- IKONOK (SVG) ---
+      const Icons = {
+        Menu: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>,
+        X: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>,
+        ArrowRight: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>,
+        ArrowUp: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6"/></svg>,
+        Utensils: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>,
+        Coffee: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="2" y2="4"/><line x1="10" x2="10" y1="2" y2="4"/><line x1="14" x2="14" y1="2" y2="4"/></svg>,
+        Sun: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>,
+        Moon: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>,
+        Soup: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9Z"/><path d="M7 21v-8a3 3 0 0 1 6 0v8"/><path d="M12 4v2"/><path d="M8 4v2"/><path d="M16 4v2"/></svg>,
+        Leaf: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 1.45 10a7 7 0 0 1-9.45 8Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>,
+        Star: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
+        CalendarDays: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>,
+        MapPin: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>,
+        Phone: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>,
+        Mail: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>,
+        Clock: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+        Facebook: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>,
+        UtensilsCrossed: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m16 2-2.3 2.3a3 3 0 0 0 0 4.2l1.8 1.8a3 3 0 0 0 4.2 0L22 8"/><path d="M15 15 3.3 3.3a4.2 4.2 0 0 0 0 6l7.3 7.3c.7.7 2 .7 2 0L15 15Zm0 0 7 7"/><path d="m2.1 21.8 6.4-6.3"/><path d="m19 5-7 7"/></svg>,
+        ExternalLink: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></svg>,
+        Bowl: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12h20"/><path d="M20 12v3a7 7 0 0 1-7 7h-2a7 7 0 0 1-7-7v-3"/><path d="M10 2v2"/><path d="M14 2v2"/></svg>
+      };
+
+      // --- KOMPONENSEK ---
+
+      const Logo = ({ className = "w-10 h-10" }) => {
+        return (
+          <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} aria-label="Menzafood Logo">
+            <circle cx="50" cy="50" r="48" fill="transparent" />
+            <path d="M50 10 C 30 10, 10 30, 10 50 C 10 70, 25 90, 50 90 C 75 90, 90 70, 90 50 C 90 40, 85 30, 80 25 L 85 35 L 95 35 L 80 20 C 70 12, 60 10, 50 10 Z" fill="#FACC15" />
+            <path d="M20 45 C 20 45, 40 50, 45 55 L 30 40 Z" fill="#EAB308" />
+            <circle cx="70" cy="35" r="5" fill="#374151" />
+          </svg>
+        );
+      };
+
+      const Header = ({ isDark, toggleTheme }) => {
+        const [isOpen, setIsOpen] = useState(false);
+        const toggleMenu = () => setIsOpen(!isOpen);
+
+        const handleScroll = (e, id) => {
+          e.preventDefault();
+          setIsOpen(false);
+          if (id === 'top') {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          } else {
+            const element = document.getElementById(id);
+            if (element) {
+              element.scrollIntoView({ behavior: 'smooth' });
+            }
+          }
+        };
+
+        const navLinks = [
+          { name: 'Heti Menü', id: 'menu' },
+          { name: 'Kapcsolat', id: 'contact' },
+        ];
+
+        return (
+          <header className="sticky top-0 z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm shadow-sm border-b border-gray-100 dark:border-slate-800 transition-colors duration-300">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex justify-between items-center h-20">
+                {/* Logo Section */}
+                <div className="flex-shrink-0 flex items-center gap-3 cursor-pointer" onClick={(e) => handleScroll(e, 'top')}>
+                  <Logo className="w-12 h-12 text-yellow-400" />
+                  <span className="font-bold text-2xl tracking-tight text-slate-800 dark:text-white">
+                    MENZA<span className="text-yellow-500">FOOD</span>
+                  </span>
+                </div>
+
+                {/* Desktop Navigation */}
+                <div className="hidden md:flex space-x-8 items-center">
+                  {navLinks.map((link) => (
+                    <button
+                      key={link.name}
+                      onClick={(e) => handleScroll(e, link.id)}
+                      className="text-slate-600 dark:text-slate-300 hover:text-yellow-600 dark:hover:text-yellow-400 font-medium transition-colors duration-200 text-sm uppercase tracking-wide bg-transparent border-none cursor-pointer"
+                    >
+                      {link.name}
+                    </button>
+                  ))}
+                  
+                  {/* Dark Mode Toggle */}
+                  <button
+                    onClick={toggleTheme}
+                    className="p-2 rounded-full text-slate-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors cursor-pointer border-none bg-transparent"
+                    aria-label="Váltás sötét módra"
+                  >
+                    {isDark ? <Icons.Sun size={20} /> : <Icons.Moon size={20} />}
+                  </button>
+
+                  {/* About Us Button */}
+                  <button 
+                    onClick={(e) => handleScroll(e, 'about')}
+                    className="bg-yellow-400 hover:bg-yellow-500 text-slate-900 px-6 py-2 rounded-full font-semibold transition-all transform hover:scale-105 shadow-md border-none cursor-pointer"
+                  >
+                    Rólunk
+                  </button>
+                </div>
+
+                {/* Mobile Menu Button & Toggle */}
+                <div className="md:hidden flex items-center gap-4">
+                  <button
+                    onClick={toggleTheme}
+                    className="p-2 rounded-full text-slate-600 dark:text-slate-300 border-none bg-transparent"
+                  >
+                    {isDark ? <Icons.Sun size={24} /> : <Icons.Moon size={24} />}
+                  </button>
+
+                  <button onClick={toggleMenu} className="text-slate-600 dark:text-slate-200 hover:text-slate-900 focus:outline-none p-2 border-none bg-transparent">
+                    {isOpen ? <Icons.X size={28} /> : <Icons.Menu size={28} />}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Mobile Dropdown */}
+            {isOpen && (
+              <div className="md:hidden bg-white dark:bg-slate-900 border-t border-gray-100 dark:border-slate-800 absolute w-full shadow-lg">
+                <div className="px-4 pt-2 pb-6 space-y-2">
+                  {navLinks.map((link) => (
+                    <button
+                      key={link.name}
+                      onClick={(e) => handleScroll(e, link.id)}
+                      className="block w-full text-left px-3 py-3 rounded-md text-base font-medium text-slate-700 dark:text-slate-200 hover:bg-yellow-50 dark:hover:bg-slate-800 hover:text-yellow-600 dark:hover:text-yellow-400 border-none bg-transparent"
+                    >
+                      {link.name}
+                    </button>
+                  ))}
+                   <button
+                      onClick={(e) => handleScroll(e, 'about')}
+                      className="block w-full text-left px-3 py-3 rounded-md text-base font-medium text-slate-700 dark:text-slate-200 hover:bg-yellow-50 dark:hover:bg-slate-800 hover:text-yellow-600 dark:hover:text-yellow-400 border-none bg-transparent"
+                    >
+                      Rólunk
+                    </button>
+                </div>
+              </div>
+            )}
+          </header>
+        );
+      };
+
+      const Hero = () => {
+        const scrollToMenu = (e) => {
+          e.preventDefault();
+          const menuSection = document.getElementById('menu');
+          if (menuSection) {
+            menuSection.scrollIntoView({ behavior: 'smooth' });
+          }
+        };
+
+        return (
+          <section className="relative w-full h-[60vh] md:h-[70vh] flex items-center justify-center overflow-hidden">
+            <div className="absolute inset-0 z-0">
+              <img
+                src="https://lh3.googleusercontent.com/p/AF1QipNWWPf9WWRAphy0zHDjDcZWXLYVygr_uiu7Gd9C=s1360-w1360-h1020-rw"
+                alt="Menzafood Étterem Külső"
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-slate-900/60"></div>
+            </div>
+
+            <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
+              <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 drop-shadow-xl">
+                Házias ízek, <span className="text-yellow-400">szívvel-lélekkel</span>
+              </h1>
+              <p className="text-lg md:text-xl text-gray-100 mb-10 max-w-2xl mx-auto font-light leading-relaxed drop-shadow-md">
+                Nálunk mindenki megtalálja a kedvencét: levesek, főzelékek, rántott húsok és finom desszertek várják minden hétköznap.
+              </p>
+              
+              <button 
+                onClick={scrollToMenu}
+                type="button"
+                className="inline-flex items-center gap-2 bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold py-4 px-8 rounded-full transition-all transform hover:scale-105 shadow-lg border-2 border-transparent hover:border-yellow-200 cursor-pointer"
+              >
+                Heti Menü Megtekintése
+                <Icons.ArrowRight size={20} />
+              </button>
+            </div>
+          </section>
+        );
+      };
+
+      const AboutSection = () => {
+        return (
+          <section id="about" className="py-20 bg-white dark:bg-slate-900 transition-colors duration-300">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                
+                {/* Text Content */}
+                <div className="space-y-6">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 text-sm font-semibold tracking-wide uppercase">
+                    <Icons.UtensilsCrossed size={16} />
+                    Önkiszolgáló Étterem
+                  </div>
+                  <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">
+                    MenzaFood: Ahol az ebéd <span className="text-yellow-500">otthonra talál</span>
+                  </h2>
+                  <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-lg">
+                    Üdvözöljük a MenzaFood-ban! Családias hangulatú önkiszolgáló éttermünk Fót szívében várja vendégeit. Célunk, hogy a rohanó hétköznapokban is biztosítsuk a minőségi, házias ízeket, legyen szó egy gyors ebédről vagy egy kényelmes étkezésről.
+                  </p>
+                  <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-lg">
+                    Belső terünk tökéletes helyszínt biztosít egy jó ebédhez. Térjen be hozzánk egy finom levesre, frissensültre vagy egy kiválló desszertre!
+                  </p>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
+                    <div className="flex items-center gap-3 p-4 bg-stone-50 dark:bg-slate-800 rounded-xl border border-stone-100 dark:border-slate-700">
+                      <div className="bg-emerald-100 dark:bg-emerald-900/30 p-2 rounded-lg text-emerald-600 dark:text-emerald-400">
+                        <Icons.Sun size={24} />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-slate-800 dark:text-white">Kerthelyiség</h4>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">Hangulatos terasz</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 p-4 bg-stone-50 dark:bg-slate-800 rounded-xl border border-stone-100 dark:border-slate-700">
+                      <div className="bg-orange-100 dark:bg-orange-900/30 p-2 rounded-lg text-orange-600 dark:text-orange-400">
+                        <Icons.Coffee size={24} />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-slate-800 dark:text-white">Kávé & Desszert</h4>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">Helyben fogyasztásra</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Image Grid */}
+                <div className="relative">
+                  <div className="aspect-[4/3] rounded-2xl overflow-hidden shadow-xl">
+                    <img 
+                      src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&q=80&w=1000" 
+                      alt="MenzaFood belső tér" 
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+                    />
+                  </div>
+                  <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-yellow-400 rounded-full flex items-center justify-center shadow-lg hidden md:flex">
+                    <span className="text-slate-900 font-bold text-center text-xs leading-tight">
+                      Friss<br/>Alapanyagok
+                    </span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </section>
+        );
+      };
+
+      const MenuItemRow = ({ type, name, price, icon, highlight, isSubItem }) => (
+        <div className={`flex flex-col py-2 border-b border-gray-100 dark:border-slate-700 last:border-0 ${highlight ? 'bg-yellow-50/50 dark:bg-yellow-900/10 -mx-4 px-4 sm:-mx-6 sm:px-6' : ''}`}>
+          <div className="flex justify-between items-start gap-2">
+            <div className="flex-1">
+              {type && (
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1">
+                  {icon}
+                  {type}
+                </div>
+              )}
+              <div className={`${isSubItem ? 'text-sm text-slate-600 dark:text-slate-300 pl-4' : 'text-slate-700 dark:text-slate-200 font-medium'} leading-relaxed text-sm sm:text-base`}>{name}</div>
+            </div>
+            {price && (
+              <div className="text-emerald-600 dark:text-emerald-400 font-bold whitespace-nowrap text-sm mt-1 sm:mt-0">
+                {price} Ft
+              </div>
+            )}
+          </div>
+        </div>
+      );
+
+      const MenuCard = ({ data, isToday }) => {
+        return (
+          <div className={`rounded-2xl shadow-sm transition-all duration-300 overflow-hidden flex flex-col h-full relative
+            ${isToday 
+              ? 'bg-white dark:bg-slate-800 border-2 border-yellow-400 dark:border-yellow-500 ring-4 ring-yellow-400/30 dark:ring-yellow-500/20 transform sm:-translate-y-2 shadow-xl z-10' 
+              : 'bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 hover:shadow-lg dark:hover:bg-slate-750'
+            }`}>
+            
+            {isToday && (
+              <div className="absolute top-0 right-0 bg-yellow-400 text-slate-900 text-xs font-bold px-3 py-1 z-20 rounded-bl-lg uppercase tracking-wide shadow-sm">
+                Mai Ajánlat
+              </div>
+            )}
+
+            <div className={`px-6 py-4 flex justify-between items-center relative overflow-hidden ${isToday ? 'bg-slate-900 dark:bg-black' : 'bg-slate-800 dark:bg-slate-900'}`}>
+               <div className="absolute top-0 right-0 p-4 opacity-10">
+                  <Icons.Utensils size={64} color="white" />
+               </div>
+              <h3 className="text-white font-bold text-xl relative z-10">{data.day}</h3>
+              <div className="flex gap-1 relative z-10">
+                <div className="w-2 h-2 rounded-full bg-yellow-400"></div>
+                <div className="w-2 h-2 rounded-full bg-yellow-400/60"></div>
+              </div>
+            </div>
+
+            <div className="p-4 sm:p-6 flex-grow flex flex-col space-y-4">
+              
+              {/* Napi Menü Blokk (Kiemelve) */}
+              <div className="bg-yellow-50 dark:bg-yellow-900/20 -mx-4 -mt-4 p-4 border-b border-yellow-100 dark:border-yellow-900/30">
+                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-yellow-600 dark:text-yellow-500 mb-2">
+                    <Icons.Star size={14} />
+                    {DishType.DAILY}
+                 </div>
+                 <div className="space-y-2">
+                    <div className="text-slate-800 dark:text-slate-200 text-sm font-medium flex gap-2">
+                      <Icons.Soup size={14} className="text-slate-400 mt-1 flex-shrink-0"/>
+                      <span>{data.dailyMenu.soup}</span>
+                    </div>
+                    <div className="text-slate-800 dark:text-slate-200 text-sm font-medium flex gap-2">
+                      <Icons.Utensils size={14} className="text-slate-400 mt-1 flex-shrink-0"/>
+                      <span>{data.dailyMenu.main}</span>
+                    </div>
+                 </div>
+                 <div className="text-right mt-2 text-yellow-600 dark:text-yellow-400 font-bold text-lg">
+                    {data.dailyMenu.price} Ft
+                 </div>
+              </div>
+
+              {/* A La Carte Items */}
+              <div className="space-y-1">
+                 {/* Külön Leves */}
+                 <MenuItemRow 
+                  type={DishType.SOUP} 
+                  name={data.soup.name} 
+                  price={data.soup.price}
+                  icon={<Icons.Soup size={14} className="text-emerald-500" />} 
+                />
+
+                {/* Főételek (Címsor + Lista) */}
+                <div className="pt-2">
+                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1">
+                    <Icons.Utensils size={14} className="text-orange-400"/>
+                    {DishType.MAIN}
+                  </div>
+                  {data.mains.map((main, idx) => (
+                    <MenuItemRow 
+                      key={idx}
+                      name={main.name}
+                      price={main.price}
+                      isSubItem
+                    />
+                  ))}
+                </div>
+
+                {/* Főzelék */}
+                 <MenuItemRow 
+                  type={DishType.FOZELEK} 
+                  name={data.fozelek.name}
+                  price={data.fozelek.price}
+                  icon={<Icons.Leaf size={14} className="text-green-600" />} 
+                />
+
+                {/* Köretek */}
+                <div className="pt-2">
+                   <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1">
+                    <Icons.Bowl size={14} className="text-blue-400"/>
+                    {DishType.SIDE}
+                  </div>
+                  {data.sides.map((side, idx) => (
+                    <MenuItemRow 
+                      key={idx}
+                      name={side.name}
+                      price={side.price}
+                      isSubItem
+                    />
+                  ))}
+                </div>
+
+                {/* Desszertek */}
+                <div className="pt-2">
+                   <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1">
+                    <Icons.Coffee size={14} className="text-rose-400"/>
+                    {DishType.DESSERT}
+                  </div>
+                  {data.desserts.map((dessert, idx) => (
+                    <MenuItemRow 
+                      key={idx}
+                      name={dessert.name}
+                      price={dessert.price}
+                      isSubItem
+                    />
+                  ))}
+                </div>
+
+              </div>
+            </div>
+          </div>
+        );
+      };
+
+      const WeeklyMenuSection = () => {
+        const getCurrentDayName = () => {
+          const days = ['Vasárnap', 'Hétfő', 'Kedd', 'Szerda', 'Csütörtök', 'Péntek', 'Szombat'];
+          const todayIndex = new Date().getDay();
+          return days[todayIndex];
+        };
+
+        const todayName = getCurrentDayName();
+
+        return (
+          <section id="menu" className="py-20 bg-stone-50 dark:bg-slate-950 transition-colors duration-300">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="text-center mb-16">
+                <span className="text-emerald-600 dark:text-emerald-400 font-semibold tracking-wider uppercase text-sm mb-2 block">
+                  Friss és Változatos
+                </span>
+                <h2 className="text-4xl font-bold text-slate-800 dark:text-white flex items-center justify-center gap-3">
+                  <Icons.CalendarDays className="text-yellow-400" size={32} />
+                  Heti Ajánlatunk
+                </h2>
+                <div className="w-24 h-1 bg-yellow-400 mx-auto mt-6 rounded-full"></div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8">
+                {WEEKLY_MENU.map((dailyMenu) => (
+                  <div key={dailyMenu.day} className="h-full">
+                    <MenuCard 
+                      data={dailyMenu} 
+                      isToday={dailyMenu.day === todayName}
+                    />
+                  </div>
+                ))}
+              </div>
+              
+              <div className="mt-12 text-center">
+                  <p className="text-slate-500 dark:text-slate-400 text-sm italic">
+                      * Az ételek allergén tartalmáról kérjük érdeklődjön a kiszolgálópultnál. A változtatás jogát fenntartjuk.
+                  </p>
+              </div>
+            </div>
+          </section>
+        );
+      };
+
+      const Footer = () => {
+        return (
+          <footer id="contact" className="bg-slate-900 dark:bg-black text-slate-300 py-16 transition-colors duration-300">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+                
+                {/* Brand Info */}
+                <div className="space-y-6">
+                  <div className="flex items-center gap-3 text-white">
+                    <Logo className="w-10 h-10 text-yellow-400" />
+                    <span className="font-bold text-2xl tracking-tight">
+                      MENZA<span className="text-yellow-400">FOOD</span>
+                    </span>
+                  </div>
+                  <p className="text-slate-400 leading-relaxed max-w-xs">
+                    Házias ételek, barátságos kiszolgálás és hangulatos környezet várja vendégeinket minden hétköznap.
+                  </p>
+                  <div className="pt-4">
+                      <a 
+                        href={CONTACT_INFO.facebookUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-yellow-400 hover:text-white transition-colors cursor-pointer bg-transparent border-none no-underline"
+                      >
+                          <Icons.Facebook size={20} />
+                          <span>Kövess minket Facebookon</span>
+                      </a>
+                  </div>
+                </div>
+
+                {/* Contact Info & MAPS */}
+                <div>
+                  <h3 className="text-white font-bold text-lg mb-6 border-b border-slate-700 pb-2 inline-block">
+                    Elérhetőség & Térkép
+                  </h3>
+                  
+                  {/* Google Maps Link Block */}
+                  <a 
+                    href={CONTACT_INFO.googleMapsUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="block mb-6 group"
+                    title="Megnyitás Google Térképen"
+                  >
+                    <div className="bg-slate-800 rounded-lg p-1 border border-slate-700 hover:border-yellow-500 transition-colors">
+                        <div className="bg-emerald-100 rounded h-32 w-full flex items-center justify-center relative overflow-hidden map-hover transition-transform duration-300">
+                             {/* Simulated Map Background Pattern */}
+                             <div className="absolute inset-0 bg-slate-200" style={{backgroundImage: 'radial-gradient(#4b5563 1px, transparent 1px)', backgroundSize: '10px 10px'}}></div>
+                             <div className="absolute inset-0 bg-slate-800/20"></div>
+                             
+                             <div className="relative z-10 flex flex-col items-center gap-2">
+                                <div className="bg-red-500 text-white p-2 rounded-full shadow-lg animate-bounce">
+                                    <Icons.MapPin size={24} />
+                                </div>
+                                <span className="bg-white/90 text-slate-900 text-xs font-bold px-2 py-1 rounded shadow">Kattints a térképhez</span>
+                             </div>
+                        </div>
+                    </div>
+                  </a>
+
+                  <ul className="space-y-4">
+                    <li className="flex items-start gap-3">
+                      <Icons.MapPin className="text-emerald-500 mt-1 flex-shrink-0" size={20} />
+                      <a 
+                        href={CONTACT_INFO.googleMapsUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="hover:text-yellow-400 transition-colors group"
+                      >
+                        {CONTACT_INFO.address}
+                        <span className="block text-xs text-slate-500 group-hover:text-yellow-400/80 mt-0.5 flex items-center gap-1 transition-colors">
+                          <Icons.ExternalLink size={10} /> Útvonaltervezés
+                        </span>
+                      </a>
+                    </li>
+                    <li className="flex items-center gap-3">
+                      <Icons.Phone className="text-emerald-500 flex-shrink-0" size={20} />
+                      <a href={`tel:${CONTACT_INFO.phone}`} className="hover:text-white transition-colors">
+                        {CONTACT_INFO.phone}
+                      </a>
+                    </li>
+                    <li className="flex items-center gap-3">
+                      <Icons.Mail className="text-emerald-500 flex-shrink-0" size={20} />
+                      <a href={`mailto:${CONTACT_INFO.email}`} className="hover:text-white transition-colors">
+                        {CONTACT_INFO.email}
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Opening Hours */}
+                <div>
+                  <h3 className="text-white font-bold text-lg mb-6 border-b border-slate-700 pb-2 inline-block">
+                    Nyitvatartás
+                  </h3>
+                  <ul className="space-y-2">
+                    {OPENING_HOURS.map((item) => (
+                      <li key={item.day} className="flex justify-between border-b border-slate-800 pb-2 last:border-0">
+                        <span className="text-slate-400">{item.day}</span>
+                        <span className={`font-medium ${item.hours === 'ZÁRVA' ? 'text-red-400' : 'text-emerald-400'}`}>
+                          {item.hours}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-6 flex items-center gap-2 text-sm text-slate-500 bg-slate-800 p-3 rounded-lg">
+                      <Icons.Clock size={16} />
+                      <span>Ebédidőben a legforgalmasabb: 12:00 - 13:00</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-16 pt-8 border-t border-slate-800 text-center text-slate-500 text-sm">
+                <p>&copy; {new Date().getFullYear()} Menzafood. Minden jog fenntartva.</p>
+              </div>
+            </div>
+          </footer>
+        );
+      };
+
+      function App() {
+        // --- Dark Mode State ---
+        const [isDark, setIsDark] = useState(false);
+        const [showTopBtn, setShowTopBtn] = useState(false);
+
+        // Initialize theme logic
+        useEffect(() => {
+          const savedTheme = localStorage.getItem('theme');
+          if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            setIsDark(true);
+          }
+        }, []);
+
+        useEffect(() => {
+          if (isDark) {
+            document.documentElement.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem('theme', 'light');
+          }
+        }, [isDark]);
+
+        const toggleTheme = () => setIsDark(!isDark);
+
+        // --- Back to Top Logic ---
+        useEffect(() => {
+          const handleScroll = () => {
+            if (window.scrollY > 400) {
+              setShowTopBtn(true);
+            } else {
+              setShowTopBtn(false);
+            }
+          };
+          window.addEventListener('scroll', handleScroll);
+          return () => window.removeEventListener('scroll', handleScroll);
+        }, []);
+
+        const goToTop = () => {
+          window.scrollTo({
+            top: 0,
+            behavior: 'smooth',
+          });
+        };
+
+        return (
+          <div className={`min-h-screen flex flex-col font-sans transition-colors duration-300 ${isDark ? 'bg-slate-950 text-slate-100' : 'bg-stone-50 text-slate-900'}`}>
+            <Header isDark={isDark} toggleTheme={toggleTheme} />
+            <main className="flex-grow">
+              <Hero />
+              <AboutSection />
+              <WeeklyMenuSection />
+            </main>
+            <Footer />
+
+            <button
+              onClick={goToTop}
+              className={`fixed bottom-8 right-8 z-50 p-3 rounded-full shadow-xl transition-all duration-300 transform border-2 border-yellow-400 cursor-pointer
+                ${showTopBtn ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}
+                ${isDark ? 'bg-slate-800 text-yellow-400 hover:bg-slate-700' : 'bg-white text-yellow-500 hover:bg-yellow-50'}
+              `}
+              aria-label="Vissza a tetejére"
+            >
+              <Icons.ArrowUp size={24} strokeWidth={3} />
+            </button>
+          </div>
+        );
+      }
+
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(<App />);
+    </script>
+  </body>
+</html>
